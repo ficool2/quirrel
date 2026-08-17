@@ -1,0 +1,187 @@
+//-----------------------------------------------------------------------------
+//	QUIRREL.VPC
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro QUIRRELDIR	"$SRCDIR\thirdparty\quirrel"
+
+$Conditional DISABLE_RTTI		"true"
+$Conditional THIRDPARTYPROJECT	"true"
+
+$include "$SRCDIR\vpc_scripts\source_lib_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;$QUIRRELDIR\;$QUIRRELDIR\include;$QUIRRELDIR\internal;$QUIRRELDIR\helpers;$QUIRRELDIR\squirrel;$QUIRRELDIR\squirrel\compiler;$QUIRRELDIR\sqmodules;$QUIRRELDIR\sqrat\include"
+
+		// not needed for now
+		$PreprocessorDefinitions		"$BASE;SQ_VAR_TRACE_ENABLED=0"
+		
+		$PreprocessorDefinitions		"$BASE;_CRT_SECURE_NO_WARNINGS"
+
+		// TODO see if we can get rid of this
+		$EnableC++Exceptions			"Yes (/EHsc)"
+
+		$AdditionalOptions				"$BASE -Wno-unused-parameter -Wno-missing-braces -Wno-missing-field-initializers -Wno-deprecated-copy-with-user-provided-copy -Wno-trigraphs" [$CLANG_CL]
+	}
+}
+
+$Project "quirrel"
+{
+	$Folder	"VM"
+	{
+		$File	"squirrel\sqapi.cpp"
+		$File	"squirrel\sqasync.cpp"
+		$File	"squirrel\sqbaselib.cpp"
+		$File	"squirrel\sqclass.cpp"
+		$File	"squirrel\sqdebug.cpp"
+		$File	"squirrel\sqdedupshrinker.cpp"
+		$File	"squirrel\sqext.cpp"
+		$File	"squirrel\sqmem.cpp"
+		$File	"squirrel\sqobject.cpp"
+		$File	"squirrel\sqstate.cpp"
+		$File	"squirrel\sqstringlib.cpp"
+		$File	"squirrel\sqtable.cpp"
+		$File	"squirrel\sqvm.cpp"
+		$File	"squirrel\vartracestub.cpp"
+
+		$File	"squirrel\opcodes.h"
+		$File	"squirrel\sqarray.h"
+		$File	"squirrel\sqclass.h"
+		$File	"squirrel\sqclosure.h"
+		$File	"squirrel\sqfuncproto.h"
+		$File	"squirrel\sqobject.h"
+		$File	"squirrel\sqpcheader.h"
+		$File	"squirrel\sqstate.h"
+		$File	"squirrel\sqstring.h"
+		$File	"squirrel\sqtable.h"
+		$File	"squirrel\squserdata.h"
+		$File	"squirrel\squtils.h"
+		$File	"squirrel\sqvm.h"
+		$File	"squirrel\vartrace.h"
+	}
+
+	$Folder	"Compiler"
+	{
+		$File	"squirrel\compiler\ast.cpp"
+		$File	"squirrel\compiler\codegen.cpp"
+		$File	"squirrel\compiler\compilationcontext.cpp"
+		$File	"squirrel\compiler\compiler.cpp"
+		$File	"squirrel\compiler\constgen.cpp"
+		$File	"squirrel\compiler\lexer.cpp"
+		$File	"squirrel\compiler\optimizer.cpp"
+		$File	"squirrel\compiler\parser.cpp"
+		$File	"squirrel\compiler\sqdump.cpp"
+		$File	"squirrel\compiler\sqfuncstate.cpp"
+		$File	"squirrel\compiler\sqtypeparser.cpp"
+		$File	"squirrel\compiler\typeinference.cpp"
+		$File	"squirrel\compiler\optimizations\closureHoisting.cpp"
+
+		$File	"squirrel\compiler\arena.h"
+		$File	"squirrel\compiler\ast.h"
+		$File	"squirrel\compiler\codegen.h"
+		$File	"squirrel\compiler\compilationcontext.h"
+		$File	"squirrel\compiler\compiler.h"
+		$File	"squirrel\compiler\constgen.h"
+		$File	"squirrel\compiler\lex_tokens.h"
+		$File	"squirrel\compiler\lexer.h"
+		$File	"squirrel\compiler\optimizer.h"
+		$File	"squirrel\compiler\parser.h"
+		$File	"squirrel\compiler\sourceloc.h"
+		$File	"squirrel\compiler\sqfuncstate.h"
+		$File	"squirrel\compiler\sqtypeparser.h"
+		$File	"squirrel\compiler\optimizations\closureHoisting.h"
+		$File	"squirrel\ast_tools\ast_indent_render.h"
+	}
+
+	$Folder	"Static Analyzer"
+	{
+		$File	"squirrel\compiler\static_analyzer\analyzer.cpp"
+		$File	"squirrel\compiler\static_analyzer\checker_visitor.cpp"
+		$File	"squirrel\compiler\static_analyzer\config.cpp"
+		$File	"squirrel\compiler\static_analyzer\external_value.cpp"
+		$File	"squirrel\compiler\static_analyzer\function_ret_type_eval.cpp"
+		$File	"squirrel\compiler\static_analyzer\global_state.cpp"
+		$File	"squirrel\compiler\static_analyzer\name_shadowing_checker.cpp"
+		$File	"squirrel\compiler\static_analyzer\naming.cpp"
+		$File	"squirrel\compiler\static_analyzer\value_ref.cpp"
+		$File	"squirrel\compiler\static_analyzer\var_scope.cpp"
+
+		$File	"squirrel\compiler\static_analyzer\analyzer.h"
+		$File	"squirrel\compiler\static_analyzer\analyzer_internal.h"
+		$File	"squirrel\compiler\static_analyzer\assign_seq_terminator.h"
+		$File	"squirrel\compiler\static_analyzer\ast_helpers.h"
+		$File	"squirrel\compiler\static_analyzer\breakable_scope.h"
+		$File	"squirrel\compiler\static_analyzer\checker_visitor.h"
+		$File	"squirrel\compiler\static_analyzer\config.h"
+		$File	"squirrel\compiler\static_analyzer\external_value.h"
+		$File	"squirrel\compiler\static_analyzer\function_info.h"
+		$File	"squirrel\compiler\static_analyzer\function_ret_type_eval.h"
+		$File	"squirrel\compiler\static_analyzer\global_state.h"
+		$File	"squirrel\compiler\static_analyzer\loop_terminator_collector.h"
+		$File	"squirrel\compiler\static_analyzer\modification_checker.h"
+		$File	"squirrel\compiler\static_analyzer\name_shadowing_checker.h"
+		$File	"squirrel\compiler\static_analyzer\naming.h"
+		$File	"squirrel\compiler\static_analyzer\node_complexity_counter.h"
+		$File	"squirrel\compiler\static_analyzer\node_diff_computer.h"
+		$File	"squirrel\compiler\static_analyzer\node_equal_checker.h"
+		$File	"squirrel\compiler\static_analyzer\operator_classification.h"
+		$File	"squirrel\compiler\static_analyzer\symbol_info.h"
+		$File	"squirrel\compiler\static_analyzer\value_ref.h"
+		$File	"squirrel\compiler\static_analyzer\var_scope.h"
+	}
+
+	$Folder	"Standard Library"
+	{
+		$File	"sqstdlib\sqstdaux.cpp"
+		$File	"sqstdlib\sqstdblob.cpp"
+		$File	"sqstdlib\sqstddatetime.cpp"
+		$File	"sqstdlib\sqstddebug.cpp"
+		$File	"sqstdlib\sqstdhash.cpp"
+		$File	"sqstdlib\sqstdio.cpp"
+		$File	"sqstdlib\sqstdmath.cpp"
+		$File	"sqstdlib\sqstdrex.cpp"
+		$File	"sqstdlib\sqstdserialization.cpp"
+		$File	"sqstdlib\sqstdstream.cpp"
+		$File	"sqstdlib\sqstdstring.cpp"
+		$File	"sqstdlib\sqstdsystem.cpp"
+
+		$File	"sqstdlib\sqstdblobimpl.h"
+		$File	"sqstdlib\sqstdhash.h"
+		$File	"sqstdlib\sqstdserialization.h"
+		$File	"sqstdlib\sqstdstream.h"
+	}
+
+	$Folder	"Modules"
+	{
+		$File	"sqmodules\sqmodules.cpp"
+		$File	"sqmodules\helpers.cpp"
+		$File	"sqmodules\path.cpp"
+		// stdio, we are routing our own filesystem
+		//$File	"sqmodules\deffileaccess.cpp"
+
+		$File	"sqmodules\sqmodules.h"
+		$File	"sqmodules\helpers.h"
+		$File	"sqmodules\path.h"
+		$File	"sqmodules\span.h"
+	}
+
+	$Folder	"Public Headers"
+	{
+		$File	"include\sq_char_class.h"
+		$File	"include\sqasync.h"
+		$File	"include\sqconfig.h"
+		$File	"include\sqext.h"
+		$File	"include\sqstdaux.h"
+		$File	"include\sqstdblob.h"
+		$File	"include\sqstddatetime.h"
+		$File	"include\sqstddebug.h"
+		$File	"include\sqstdio.h"
+		$File	"include\sqstdmath.h"
+		$File	"include\sqstdstring.h"
+		$File	"include\sqstdsystem.h"
+		$File	"include\squirrel.h"
+	}
+}

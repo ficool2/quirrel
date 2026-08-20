@@ -451,6 +451,11 @@ protected:
       if (nparamscheck > 0)
         SQRAT_VERIFY(SQ_SUCCEEDED(sq_setparamscheck(vm, nparamscheck, nullptr)));
       SQRAT_VERIFY(SQ_SUCCEEDED(sq_setnativeclosurename(vm, -1, name)));
+
+      const string declString = BuildDeclString<Func>(name);
+      if (!declString.empty())
+          SQRAT_VERIFY(SQ_SUCCEEDED(sq_setnativeclosuresignature(vm, -1, declString.c_str())));
+
       if (docstring)
           SQRAT_VERIFY(SQ_SUCCEEDED(sq_setnativeclosuredocstring(vm, -1, docstring)));
 

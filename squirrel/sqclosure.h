@@ -178,6 +178,9 @@ public:
         ret->_env = _env;
         if(ret->_env) __ObjAddRef(ret->_env);
         ret->_name = _name;
+        ret->_docstring = _docstring;
+        ret->_declstring = _declstring;
+        ret->_signature = _signature;
         _COPY_VECTOR(ret->_outervalues,_outervalues,_noutervalues);
         ret->_result_type_mask = _result_type_mask;
         ret->_typecheck.copy(_typecheck);
@@ -214,6 +217,9 @@ public:
     SQWeakRef *_env;
     SQFUNCTION _function;
     SQObjectPtr _name;
+    SQObjectPtr _docstring;
+    SQObjectPtr _declstring;
+    SQObjectPtr _signature;
 };
 
 

@@ -2291,15 +2291,12 @@ static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
         SQObjectPtr parameters;
         SQObjectPtr defparams;
         SQObjectPtr typecheck;
-        SQObjectPtr key;
-        SQObjectPtr value;
-        key._type = OT_USERPOINTER;
-        key._unVal.pUserPointer = (void *)((size_t)(void *)nc->_function ^ ~size_t(0));
-        if (_table(_ss(v)->doc_objects)->Get(key, value)) {
+        SQObjectPtr value = nc->_declstring;
+        if (sq_isstring(value)) {
             SQFunctionType ft(_ss(v));
             SQInteger errorPos = -1;
             SQObjectPtr errorString;
-            if (sq_isstring(value)) {
+            {
                if (sq_parse_function_type_string(v, _stringval(value), ft, errorPos, errorString)) {
 
                    parameters = SQObjectPtr(SQArray::Create(_ss(v), ft.argNames.size() + 1));
@@ -2356,10 +2353,7 @@ static SQInteger closure_getfuncinfos_obj(HSQUIRRELVM v, SQObjectPtr & o) {
         SET_SLOT("return_type_mask", SQObjectPtr(int(nc->_result_type_mask)));
         SET_SLOT("varargs_type_mask", varargsTypeMask);
 
-        SQObjectPtr docObject;
-        key._unVal.pUserPointer = (void *)nc->_function;
-        _table(_ss(v)->doc_objects)->Get(key, docObject);
-        SET_SLOT("doc", docObject);
+        SET_SLOT("doc", nc->_docstring);
     }
 
     #undef SET_SLOT

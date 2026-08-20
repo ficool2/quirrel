@@ -124,8 +124,13 @@ static SQInteger debug_doc(HSQUIRRELVM v)
             key._unVal.pUserPointer = (void *)_closure(subject)->_function;
             break;
         case OT_NATIVECLOSURE:
-            key._unVal.pUserPointer = (void *)_nativeclosure(subject)->_function;
-            break;
+            if (sq_isstring(_nativeclosure(subject)->_docstring)) {
+                sq_pushobject(v, _nativeclosure(subject)->_docstring);
+            }
+            else {
+                sq_pushnull(v);
+            }
+            return 1;
         case OT_INSTANCE:
             key._unVal.pUserPointer = (void *)_instance(subject)->_class;
             break;
@@ -200,11 +205,10 @@ static SQInteger debug_get_function_info_table(HSQUIRRELVM v)
         case OT_NATIVECLOSURE: {
             native = true;
 
-            key._unVal.pUserPointer = (void *)_nativeclosure(subject)->_function;
-            _table(_ss(v)->doc_objects)->Get(key, docObject);
+            docObject = _nativeclosure(subject)->_docstring;
 
-            key._unVal.pUserPointer = (void *)((size_t)(void *)_nativeclosure(subject)->_function ^ ~size_t(0));
-            if (_table(_ss(v)->doc_objects)->Get(key, value)) {
+            value = _nativeclosure(subject)->_declstring;
+            if (sq_isstring(value)) {
                 SQInteger errorPos = -1;
                 SQObjectPtr errorString;
                 if (sq_isstring(value)) {
@@ -299,8 +303,6 @@ static SQInteger debug_get_function_decl_string(HSQUIRRELVM v)
 
     SQObjectPtr nullVal;
     SQObjectPtr value;
-    SQObjectPtr key;
-    key._type = OT_USERPOINTER;
     switch (sq_type(subject))
     {
         case OT_CLOSURE:
@@ -332,8 +334,10 @@ static SQInteger debug_get_function_decl_string(HSQUIRRELVM v)
         }
 
         case OT_NATIVECLOSURE:
-            key._unVal.pUserPointer = (void *)((size_t)(void *)_nativeclosure(subject)->_function ^ ~size_t(0));
-            if (_table(_ss(v)->doc_objects)->Get(key, value)) {
+            value = _nativeclosure(subject)->_signature;
+            if (!sq_isstring(value))
+                value = _nativeclosure(subject)->_declstring;
+            if (sq_isstring(value)) {
                 sq_pushobject(v, value);
                 return 1;
             }

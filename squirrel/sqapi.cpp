@@ -782,11 +782,29 @@ SQRESULT sq_setnativeclosuredocstring(HSQUIRRELVM v,SQInteger idx,const char *do
     assert(docstring);
     SQObject o = stack_get(v, idx);
     if(sq_isnativeclosure(o)) {
-        SQObjectPtr docValue(SQString::Create(_ss(v), docstring));
-        SQObjectPtr docKey;
-        docKey._type = OT_USERPOINTER;
-        docKey._unVal.pUserPointer = (void *)_nativeclosure(o)->_function;
-        _table(_ss(v)->doc_objects)->NewSlot(docKey, docValue);
+        _nativeclosure(o)->_docstring = SQString::Create(_ss(v), docstring);
+        return SQ_OK;
+    }
+    return sq_throwerror(v,"the object is not a nativeclosure");
+}
+
+SQRESULT sq_setnativeclosuredeclstring(HSQUIRRELVM v,SQInteger idx,const char *declstring)
+{
+    assert(declstring);
+    SQObject o = stack_get(v, idx);
+    if(sq_isnativeclosure(o)) {
+        _nativeclosure(o)->_declstring = SQString::Create(_ss(v), declstring);
+        return SQ_OK;
+    }
+    return sq_throwerror(v,"the object is not a nativeclosure");
+}
+
+SQRESULT sq_setnativeclosuresignature(HSQUIRRELVM v,SQInteger idx,const char *signature)
+{
+    assert(signature);
+    SQObject o = stack_get(v, idx);
+    if(sq_isnativeclosure(o)) {
+        _nativeclosure(o)->_signature = SQString::Create(_ss(v), signature);
         return SQ_OK;
     }
     return sq_throwerror(v,"the object is not a nativeclosure");
@@ -800,9 +818,12 @@ SQRESULT sq_setobjectdocstring(HSQUIRRELVM v, const HSQOBJECT *obj, const char *
         SQObjectPtr docValue(SQString::Create(_ss(v), docstring));
         SQObjectPtr docKey;
         docKey._type = OT_USERPOINTER;
+        if (sq_isnativeclosure(*obj)) {
+            _nativeclosure(*obj)->_docstring = docValue;
+            return SQ_OK;
+        }
         docKey._unVal.pUserPointer =
             sq_isclass(*obj) || sq_istable(*obj) ? (void *)_userpointer(*obj) :
-            sq_isnativeclosure(*obj) ? (void *)_nativeclosure(*obj)->_function :
             sq_isclosure(*obj) ? (void *)_closure(*obj)->_function : NULL;
         _table(_ss(v)->doc_objects)->NewSlot(docKey, docValue);
         return SQ_OK;
@@ -884,20 +905,10 @@ SQRESULT sq_new_closure_slot_from_decl_string(HSQUIRRELVM v, SQFUNCTION func, SQ
 
 #if SQ_STORE_DOC_OBJECTS
     if (docstring) {
-        SQObjectPtr docValue(SQString::Create(_ss(v), docstring));
-        SQObjectPtr docKey;
-        docKey._type = OT_USERPOINTER;
-        docKey._unVal.pUserPointer = (void *)func;
-        _table(_ss(v)->doc_objects)->NewSlot(docKey, docValue);
+        nc->_docstring = SQString::Create(_ss(v), docstring);
     }
 
-    {
-        SQObjectPtr declValue(SQString::Create(_ss(v), function_decl));
-        SQObjectPtr declKey;
-        declKey._type = OT_USERPOINTER;
-        declKey._unVal.pUserPointer = (void *)(((size_t)(void *)func) ^ ~size_t(0));
-        _table(_ss(v)->doc_objects)->NewSlot(declKey, declValue);
-    }
+    nc->_declstring = SQString::Create(_ss(v), function_decl);
 #else
     (void)(docstring);
 #endif
@@ -1268,6 +1279,28 @@ SQRESULT sq_registernativefield(HSQUIRRELVM v, SQInteger classidx,
     SQObjectPtr key(SQString::Create(_ss(v), name));
     if (!cls->RegisterNativeField(_ss(v), key, (uint16_t)offset, (uint8_t)fieldtype))
         return sq_throwerror(v, "failed to register native field");
+
+    return SQ_OK;
+}
+
+SQRESULT sq_getnativefieldinfo(HSQUIRRELVM v, SQInteger classidx,
+    const char *name, SQInteger *offset, SQInteger *fieldtype)
+{
+    SQObjectPtr &o = stack_get(v, classidx);
+
+    if (sq_type(o) != OT_CLASS)
+        return sq_throwerror(v, "the object is not a class");
+
+    SQObjectPtr key(SQString::Create(_ss(v), name));
+    SQObjectPtr member;
+    if (!_class(o)->_members->Get(key, member) || !_isnativefield(member))
+        return sq_throwerror(v, "the class has no native field by that name");
+
+    const SQNativeFieldDesc &desc = _class(o)->_nativefields[_member_idx(member)];
+    if (offset)
+        *offset = desc.offset;
+    if (fieldtype)
+        *fieldtype = desc.type;
 
     return SQ_OK;
 }

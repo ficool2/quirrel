@@ -30,6 +30,7 @@
 #define _SQRAT_TYPES_H_
 
 #include <squirrel.h>
+#include <stdio.h>
 
 #include "sqratClassType.h"
 #include "sqratUtil.h"
@@ -688,6 +689,72 @@ namespace vargs
 template <typename... Args>
 bool check_signature(HSQUIRRELVM vm, SQInteger start_stack_pos=1) {
     return vargs::check_var_types<Args...>(vm, start_stack_pos);
+}
+
+
+// Declaration strings
+//
+// A bound C++ function knows its argument and return types at compile time
+// but none of that survives into the VM.
+// this thunk takes the arguments off the stack generically.
+//
+template<class T>
+struct DeclTypeName {
+    static string Get() {
+        const char *name = Var<T>::getVarTypeName();
+        if (!name || !name[0])
+            return string("any");
+        if (!strcmp(name, "integer"))
+            return string("int"); // name the type parser uses
+        return string(name);
+    }
+};
+
+template<>
+struct DeclTypeName<void> {
+    static string Get() { return string(); }
+};
+
+template<class Sig>
+struct DeclStringBuilder {
+    static string Get(const char *) { return string(); }
+};
+
+template<class R, class... A>
+struct DeclStringBuilder<R(A...)> {
+    static string Get(const char *name) {
+        string result(name);
+        result += "(";
+
+        const string argTypes[] = { string(), DeclTypeName<A>::Get()... };
+        for (size_t i = 1; i < sizeof(argTypes) / sizeof(argTypes[0]); i++) {
+            char argName[16];
+            snprintf(argName, sizeof(argName), "arg%d", int(i));
+
+            if (i > 1)
+                result += ", ";
+
+            result += argName;
+            result += ": ";
+            result += argTypes[i];
+        }
+
+        result += ")";
+
+        const string returnType = DeclTypeName<R>::Get();
+        if (!returnType.empty()) {
+            result += ": ";
+            result += returnType;
+        }
+
+        return result;
+    }
+};
+
+/// Builds a declaration string for a bound function or member function
+template<class F>
+inline string BuildDeclString(const char *name) {
+    return DeclStringBuilder<get_callable_function_t<F>>::Get(name);
 }
 
 

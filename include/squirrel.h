@@ -390,6 +390,8 @@ SQUIRREL_API SQRESULT sq_getclosureinfo(HSQUIRRELVM v,SQInteger idx,SQInteger *n
 SQUIRREL_API SQRESULT sq_getclosurename(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_setnativeclosurename(HSQUIRRELVM v,SQInteger idx,const char *name);
 SQUIRREL_API SQRESULT sq_setnativeclosuredocstring(HSQUIRRELVM v,SQInteger idx,const char *docstring);
+SQUIRREL_API SQRESULT sq_setnativeclosuredeclstring(HSQUIRRELVM v,SQInteger idx,const char *declstring);
+SQUIRREL_API SQRESULT sq_setnativeclosuresignature(HSQUIRRELVM v,SQInteger idx,const char *signature);
 SQUIRREL_API SQRESULT sq_setobjectdocstring(HSQUIRRELVM v, const HSQOBJECT *obj, const char *docstring);
 SQUIRREL_API SQRESULT sq_setinstanceup(HSQUIRRELVM v, SQInteger idx, SQUserPointer p);
 SQUIRREL_API SQRESULT sq_getinstanceup(HSQUIRRELVM v, SQInteger idx, SQUserPointer *p,SQUserPointer typetag);
@@ -410,6 +412,8 @@ SQUIRREL_API SQRESULT sq_setbyhandle(HSQUIRRELVM v,SQInteger idx,const HSQMEMBER
 #define SQNFT_BOOL     4
 SQUIRREL_API SQRESULT sq_registernativefield(HSQUIRRELVM v, SQInteger classidx,
     const char *name, SQInteger offset, SQInteger fieldtype);
+SQUIRREL_API SQRESULT sq_getnativefieldinfo(HSQUIRRELVM v, SQInteger classidx,
+    const char *name, SQInteger *offset, SQInteger *fieldtype);
 
 /*object manipulation*/
 SQUIRREL_API void sq_pushroottable(HSQUIRRELVM v);

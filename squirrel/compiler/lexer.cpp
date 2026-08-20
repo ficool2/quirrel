@@ -243,7 +243,11 @@ SQInteger SQLexer::LexSingleToken()
                 RETURN_TOKEN(TK_LE)
                 break;
             case '-': NEXT(); RETURN_TOKEN(TK_NEWSLOT); break;
-            case '<': NEXT(); RETURN_TOKEN(TK_SHIFTL); break;
+            case '<':
+                NEXT();
+                if (CUR_CHAR == '='){ NEXT(); RETURN_TOKEN(TK_SHIFTLEQ); }
+                RETURN_TOKEN(TK_SHIFTL);
+                break;
             }
             RETURN_TOKEN('<');
         case '>':
@@ -253,8 +257,10 @@ SQInteger SQLexer::LexSingleToken()
                 NEXT();
                 if(CUR_CHAR == '>'){
                     NEXT();
+                    if (CUR_CHAR == '='){ NEXT(); RETURN_TOKEN(TK_USHIFTREQ); }
                     RETURN_TOKEN(TK_USHIFTR);
                 }
+                if (CUR_CHAR == '='){ NEXT(); RETURN_TOKEN(TK_SHIFTREQ); }
                 RETURN_TOKEN(TK_SHIFTR);
             }
             else { RETURN_TOKEN('>') }
@@ -316,9 +322,13 @@ SQInteger SQLexer::LexSingleToken()
             break;
             }
         case '{': case '}': case '(': case ')': case '[': case ']':
-        case ';': case ',': case '^': case '~':
+        case ';': case ',': case '~':
             {SQInteger ret = CUR_CHAR;
             NEXT(); RETURN_TOKEN(ret); }
+        case '^':
+            NEXT();
+            if (CUR_CHAR == '='){ NEXT(); RETURN_TOKEN(TK_XOREQ); }
+            else RETURN_TOKEN('^');
         case '?':
             {NEXT();
             if (CUR_CHAR == '.') {
@@ -350,12 +360,14 @@ SQInteger SQLexer::LexSingleToken()
             RETURN_TOKEN(TK_VARPARAMS);
         case '&':
             NEXT();
-            if (CUR_CHAR != '&'){ RETURN_TOKEN('&') }
-            else { NEXT(); RETURN_TOKEN(TK_AND); }
+            if (CUR_CHAR == '&'){ NEXT(); RETURN_TOKEN(TK_AND); }
+            else if (CUR_CHAR == '='){ NEXT(); RETURN_TOKEN(TK_ANDEQ); }
+            else RETURN_TOKEN('&');
         case '|':
             NEXT();
-            if (CUR_CHAR != '|'){ RETURN_TOKEN('|') }
-            else { NEXT(); RETURN_TOKEN(TK_OR); }
+            if (CUR_CHAR == '|'){ NEXT(); RETURN_TOKEN(TK_OR); }
+            else if (CUR_CHAR == '='){ NEXT(); RETURN_TOKEN(TK_OREQ); }
+            else RETURN_TOKEN('|');
         case ':':
             NEXT();
             if (CUR_CHAR != ':'){ RETURN_TOKEN(':') }

@@ -62,6 +62,12 @@
     DEF_TREE_OP(MULEQ), \
     DEF_TREE_OP(DIVEQ), \
     DEF_TREE_OP(MODEQ), \
+    DEF_TREE_OP(OREQ), \
+    DEF_TREE_OP(ANDEQ), \
+    DEF_TREE_OP(XOREQ), \
+    DEF_TREE_OP(SHLEQ), \
+    DEF_TREE_OP(SHREQ), \
+    DEF_TREE_OP(USHREQ), \
     DEF_TREE_OP(NOT), \
     DEF_TREE_OP(BNOT), \
     DEF_TREE_OP(NEG), \
@@ -210,7 +216,7 @@ public:
     bool isAccessExpr() const { return TO_GETFIELD <= op() && op() <= TO_SETSLOT; }
     AccessExpr *asAccessExpr() const { assert(isAccessExpr()); return (AccessExpr*)this; }
     LiteralExpr *asLiteral() const { assert(op() == TO_LITERAL); return (LiteralExpr *)this; }
-    BinExpr *asBinExpr() const { assert(TO_NULLC <= op() && op() <= TO_MODEQ); return (BinExpr *)this; }
+    BinExpr *asBinExpr() const { assert(TO_NULLC <= op() && op() <= TO_USHREQ); return (BinExpr *)this; }
     CallExpr *asCallExpr() const { assert(op() == TO_CALL); return (CallExpr *)this; }
     TableExpr *asTableExpr() const { assert(op() == TO_TABLE || op() == TO_CLASS); return (TableExpr *)this; }
     ClassExpr *asClassExpr() const { assert(op() == TO_CLASS); return (ClassExpr *)this; }
@@ -1355,6 +1361,12 @@ void Node::visit(V *visitor) {
     case TO_MULEQ:
     case TO_DIVEQ:
     case TO_MODEQ:
+    case TO_OREQ:
+    case TO_ANDEQ:
+    case TO_XOREQ:
+    case TO_SHLEQ:
+    case TO_SHREQ:
+    case TO_USHREQ:
         visitor->visitBinExpr(static_cast<BinExpr *>(this)); return;
     case TO_NOT:
     case TO_BNOT:
@@ -1472,6 +1484,12 @@ Node *Node::transform(T *transformer) {
   case TO_MULEQ:
   case TO_DIVEQ:
   case TO_MODEQ:
+  case TO_OREQ:
+  case TO_ANDEQ:
+  case TO_XOREQ:
+  case TO_SHLEQ:
+  case TO_SHREQ:
+  case TO_USHREQ:
     return transformer->transformBinExpr(static_cast<BinExpr *>(this));
   case TO_NOT:
   case TO_BNOT:

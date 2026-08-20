@@ -17,6 +17,20 @@ enum BitWiseOP {
     BW_USHIFTR = 6
 };
 
+enum CompArithOP {
+    COMPARITH_ADD = '+',
+    COMPARITH_SUB = '-',
+    COMPARITH_MUL = '*',
+    COMPARITH_DIV = '/',
+    COMPARITH_MOD = '%',
+    COMPARITH_BW_OR = '|',
+    COMPARITH_BW_AND = '&',
+    COMPARITH_BW_XOR = '^',
+    COMPARITH_BW_SHIFTL = 'l',
+    COMPARITH_BW_SHIFTR = 'r',
+    COMPARITH_BW_USHIFTR = 'u'
+};
+
 enum CmpOP {
     CMP_G = 0,
     CMP_GE = 2,

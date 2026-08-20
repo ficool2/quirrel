@@ -361,7 +361,7 @@ void CheckerVisitor::checkIdUsed(const Id *id, const Node *p, ValueRef *v) {
   v->info->used = true;
   if (assigned) {
     v->info->usedAfterAssign = true;
-    v->assigned = e ? TO_PLUSEQ <= e->op() && e->op() <= TO_MODEQ : false;
+    v->assigned = e ? TO_PLUSEQ <= e->op() && e->op() <= TO_USHREQ : false;
   }
 }
 
@@ -2489,6 +2489,12 @@ void CheckerVisitor::visitBinExpr(BinExpr *expr) {
   case TO_MULEQ:
   case TO_DIVEQ:
   case TO_MODEQ:
+  case TO_OREQ:
+  case TO_ANDEQ:
+  case TO_XOREQ:
+  case TO_SHLEQ:
+  case TO_SHREQ:
+  case TO_USHREQ:
   case TO_NEWSLOT:
   case TO_ASSIGN:
     nodeStack.push_back({ SST_NODE, expr });
@@ -4768,7 +4774,7 @@ void CheckerVisitor::applyAssignmentToScope(const BinExpr *bin) {
 }
 
 void CheckerVisitor::applyAssignEqToScope(const BinExpr *bin) {
-  assert(TO_PLUSEQ <= bin->op() && bin->op() <= TO_MODEQ);
+  assert(TO_PLUSEQ <= bin->op() && bin->op() <= TO_USHREQ);
 
   const Expr *lhs = bin->lhs();
   const char *name = computeNameRef(lhs, nullptr, 0);
@@ -4796,6 +4802,12 @@ void CheckerVisitor::applyBinaryToScope(const BinExpr *bin) {
   case TO_MULEQ:
   case TO_DIVEQ:
   case TO_MODEQ:
+  case TO_OREQ:
+  case TO_ANDEQ:
+  case TO_XOREQ:
+  case TO_SHLEQ:
+  case TO_SHREQ:
+  case TO_USHREQ:
     return applyAssignEqToScope(bin);
   default:
     break;

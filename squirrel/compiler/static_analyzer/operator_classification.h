@@ -39,7 +39,7 @@ inline bool isArithOperator(TreeOp op) {
   return op == TO_OROR || op == TO_ANDAND
     || (TO_3CMP <= op && op <= TO_LT)
     || (TO_USHR <= op && op <= TO_SUB)
-    || (TO_PLUSEQ <= op && op <= TO_MODEQ)
+    || (TO_PLUSEQ <= op && op <= TO_USHREQ)
     || op == TO_BNOT || op == TO_NEG || op == TO_INC;
 }
 
@@ -48,7 +48,8 @@ inline bool isDivOperator(TreeOp op) {
 }
 
 inline bool isPureArithOperator(TreeOp op) {
-  return (TO_USHR <= op && op <= TO_SUB) || (TO_PLUSEQ <= op && op <= TO_MODEQ);
+  return (TO_USHR <= op && op <= TO_SUB) || (TO_PLUSEQ <= op && op <= TO_MODEQ)
+    || (TO_SHLEQ <= op && op <= TO_USHREQ);
 }
 
 inline bool isRelationOperator(TreeOp op) {
@@ -60,7 +61,8 @@ inline bool isBoolRelationOperator(TreeOp op) {
 }
 
 inline bool isBitwiseOperator(TreeOp op) {
-  return op == TO_OR || op == TO_AND || op == TO_XOR;
+  return op == TO_OR || op == TO_AND || op == TO_XOR
+    || op == TO_OREQ || op == TO_ANDEQ || op == TO_XOREQ;
 }
 
 inline bool isBoolCompareOperator(TreeOp op) {
@@ -80,7 +82,7 @@ inline bool isHigherShiftPriority(TreeOp op) {
 }
 
 inline bool isAssignOp(TreeOp op) {
-  return op == TO_ASSIGN || (TO_PLUSEQ <= op && op <= TO_MODEQ);
+  return op == TO_ASSIGN || (TO_PLUSEQ <= op && op <= TO_USHREQ);
 }
 
 }

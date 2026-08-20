@@ -305,6 +305,12 @@ void ConstGenVisitor::visitBinExpr(BinExpr *expr)
         case TO_MULEQ:
         case TO_DIVEQ:
         case TO_MODEQ:
+        case TO_OREQ:
+        case TO_ANDEQ:
+        case TO_XOREQ:
+        case TO_SHLEQ:
+        case TO_SHREQ:
+        case TO_USHREQ:
             throwUnsupported(expr, "compound arithmetic expression");
         default:
             break;

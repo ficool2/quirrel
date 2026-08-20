@@ -179,7 +179,8 @@ Arithmetic
     exp:= 'exp' op 'exp'
 
 Quirrel supports the standard arithmetic operators ``+, -, *, / and %``.
-Other than that is also supports compact operators (``+=,-=,*=,/=,%=``) and
+Other than that is also supports compact operators (``+=,-=,*=,/=,%=``), their
+bitwise counterparts (``|=,&=,^=,<<=,>>=,>>>=``) and
 increment and decrement operators(++ and --);::
 
     a += 2;
@@ -354,7 +355,8 @@ Operators precedence
 +---------------------------------------+-----------+
 | ``??``                                |           |
 +---------------------------------------+-----------+
-| ``+=, =, -=, /=, *=, %=``             | ...       |
+| ``+=, =, -=, /=, *=, %=``,            | ...       |
+| ``|=, &=, ^=, <<=, >>=, >>>=``        |           |
 +---------------------------------------+-----------+
 
 .. _table_constructor:

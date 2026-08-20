@@ -1,0 +1,11 @@
+or 15
+and 6
+xor 9
+shl 72
+shr 36
+ushr 15
+table 7 16
+array 9 1
+outer 4 16
+prec 7
+caught: bitwise op between 'string' and 'integer'

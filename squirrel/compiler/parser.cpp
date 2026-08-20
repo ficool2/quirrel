@@ -483,7 +483,13 @@ Expr* SQParser::Expression(SQExpressionContext expression_context)
     case TK_PLUSEQ:
     case TK_MULEQ:
     case TK_DIVEQ:
-    case TK_MODEQ: {
+    case TK_MODEQ:
+    case TK_OREQ:
+    case TK_ANDEQ:
+    case TK_XOREQ:
+    case TK_SHIFTLEQ:
+    case TK_SHIFTREQ:
+    case TK_USHIFTREQ: {
         SQInteger op = _token;
         Lex();
         Expr *e2 = Expression(SQE_RVALUE);
@@ -523,6 +529,12 @@ Expr* SQParser::Expression(SQExpressionContext expression_context)
         case TK_MULEQ: expr = newNode<BinExpr>(TO_MULEQ, expr, e2); break;
         case TK_DIVEQ: expr = newNode<BinExpr>(TO_DIVEQ, expr, e2); break;
         case TK_MODEQ: expr = newNode<BinExpr>(TO_MODEQ, expr, e2); break;
+        case TK_OREQ: expr = newNode<BinExpr>(TO_OREQ, expr, e2); break;
+        case TK_ANDEQ: expr = newNode<BinExpr>(TO_ANDEQ, expr, e2); break;
+        case TK_XOREQ: expr = newNode<BinExpr>(TO_XOREQ, expr, e2); break;
+        case TK_SHIFTLEQ: expr = newNode<BinExpr>(TO_SHLEQ, expr, e2); break;
+        case TK_SHIFTREQ: expr = newNode<BinExpr>(TO_SHREQ, expr, e2); break;
+        case TK_USHIFTREQ: expr = newNode<BinExpr>(TO_USHREQ, expr, e2); break;
         }
     }
     break;

@@ -84,6 +84,16 @@ bool SQVM::BW_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,con
 
 bool SQVM::ARITH_OP(SQUnsignedInteger op,SQObjectPtr &trg,const SQObjectPtr &o1,const SQObjectPtr &o2)
 {
+    switch (op) {
+        case COMPARITH_BW_OR:      return BW_OP(BW_OR, trg, o1, o2);
+        case COMPARITH_BW_AND:     return BW_OP(BW_AND, trg, o1, o2);
+        case COMPARITH_BW_XOR:     return BW_OP(BW_XOR, trg, o1, o2);
+        case COMPARITH_BW_SHIFTL:  return BW_OP(BW_SHIFTL, trg, o1, o2);
+        case COMPARITH_BW_SHIFTR:  return BW_OP(BW_SHIFTR, trg, o1, o2);
+        case COMPARITH_BW_USHIFTR: return BW_OP(BW_USHIFTR, trg, o1, o2);
+        default: break;
+    }
+
     SQInteger tmask = sq_type(o1)|sq_type(o2);
     switch(tmask) {
         case OT_INTEGER:{

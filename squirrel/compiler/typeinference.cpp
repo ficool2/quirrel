@@ -290,6 +290,12 @@ unsigned CodeGenVisitor::inferExprTypeMaskImpl(Expr *expr) {
     case TO_MULEQ:
     case TO_DIVEQ:
     case TO_MODEQ:
+    case TO_OREQ:
+    case TO_ANDEQ:
+    case TO_XOREQ:
+    case TO_SHLEQ:
+    case TO_SHREQ:
+    case TO_USHREQ:
     // Unknown at compile time
     case TO_GETFIELD:
     case TO_GETSLOT:

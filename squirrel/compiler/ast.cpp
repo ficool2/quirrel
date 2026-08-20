@@ -61,6 +61,12 @@ void Node::visitChildren(Visitor *visitor) {
     case TO_MULEQ:
     case TO_DIVEQ:
     case TO_MODEQ:
+    case TO_OREQ:
+    case TO_ANDEQ:
+    case TO_XOREQ:
+    case TO_SHLEQ:
+    case TO_SHREQ:
+    case TO_USHREQ:
         static_cast<BinExpr *>(this)->visitChildren(visitor); return;
     case TO_NOT:
     case TO_BNOT:
@@ -173,6 +179,12 @@ void Node::transformChildren(Transformer *transformer) {
   case TO_MULEQ:
   case TO_DIVEQ:
   case TO_MODEQ:
+  case TO_OREQ:
+  case TO_ANDEQ:
+  case TO_XOREQ:
+  case TO_SHLEQ:
+  case TO_SHREQ:
+  case TO_USHREQ:
     static_cast<BinExpr *>(this)->transformChildren(transformer); return;
   case TO_NOT:
   case TO_BNOT:
@@ -629,6 +641,12 @@ const char* treeopStr(enum TreeOp op) {
   case TO_MULEQ: return "*=";
   case TO_DIVEQ: return "/=";
   case TO_MODEQ: return "%=";
+  case TO_OREQ: return "|=";
+  case TO_ANDEQ: return "&=";
+  case TO_XOREQ: return "^=";
+  case TO_SHLEQ: return "<<=";
+  case TO_SHREQ: return ">>=";
+  case TO_USHREQ: return ">>>=";
   default: return nullptr;
   }
 }

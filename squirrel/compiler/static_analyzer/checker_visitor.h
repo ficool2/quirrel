@@ -65,7 +65,7 @@ protected:
   bool doCheck(const Node *checkee, Node *n) const {
     TreeOp op = n->op();
 
-    if (op == TO_ASSIGN || (TO_PLUSEQ <= op && op <= TO_MODEQ)) {
+    if (op == TO_ASSIGN || (TO_PLUSEQ <= op && op <= TO_USHREQ)) {
       BinExpr *bin = static_cast<BinExpr *>(n);
       return equalChecker.check(checkee, bin->lhs());
     }

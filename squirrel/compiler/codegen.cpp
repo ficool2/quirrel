@@ -2072,7 +2072,7 @@ void CodeGenVisitor::emitShortCircuitLogicalOp(SQOpcode op, Expr *lhs, Expr *rhs
     _fs->SetInstructionParam(jpos, 1, (_fs->GetCurrentPos() - jpos));
 }
 
-void CodeGenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lvalue, Expr *rvalue) {
+void CodeGenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lvalue, Expr *rvalue, SQInteger op3) {
 
     if (lvalue->isAccessExpr() && lvalue->asAccessExpr()->isFieldAccessExpr()) {
         FieldAccessExpr *fieldAccess = lvalue->asAccessExpr()->asFieldAccessExpr();
@@ -2111,7 +2111,7 @@ void CodeGenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
             SQInteger p1 = _fs->PopTarget(); //key in OP_GET
             _fs->PushTarget(p1);
             //EmitCompArithLocal(tok, p1, p1, p2);
-            _fs->AddInstruction(op, p1, p2, p1, 0);
+            _fs->AddInstruction(op, p1, p2, p1, op3);
             EmitCheckType(p1, varInfo.type_mask);
             _fs->SnoozeOpt();
         }
@@ -2122,7 +2122,7 @@ void CodeGenVisitor::emitCompoundArith(SQOpcode op, SQInteger opcode, Expr *lval
             SQInteger val = _fs->TopTarget();
             SQInteger tmp = _fs->PushTarget();
             _fs->AddInstruction(_OP_GETOUTER, tmp, pos);
-            _fs->AddInstruction(op, tmp, val, tmp, 0);
+            _fs->AddInstruction(op, tmp, val, tmp, op3);
             EmitCheckType(tmp, varInfo.type_mask);
             _fs->PopTarget();
             _fs->PopTarget();
@@ -2461,6 +2461,12 @@ void CodeGenVisitor::visitBinExpr(BinExpr *expr) {
     case TO_MULEQ:   emitCompoundArith(_OP_MUL, '*', expr->lhs(), expr->rhs()); break;
     case TO_DIVEQ:   emitCompoundArith(_OP_DIV, '/', expr->lhs(), expr->rhs()); break;
     case TO_MODEQ:   emitCompoundArith(_OP_MOD, '%', expr->lhs(), expr->rhs()); break;
+    case TO_OREQ:    emitCompoundArith(_OP_BITW, COMPARITH_BW_OR, expr->lhs(), expr->rhs(), BW_OR); break;
+    case TO_ANDEQ:   emitCompoundArith(_OP_BITW, COMPARITH_BW_AND, expr->lhs(), expr->rhs(), BW_AND); break;
+    case TO_XOREQ:   emitCompoundArith(_OP_BITW, COMPARITH_BW_XOR, expr->lhs(), expr->rhs(), BW_XOR); break;
+    case TO_SHLEQ:   emitCompoundArith(_OP_BITW, COMPARITH_BW_SHIFTL, expr->lhs(), expr->rhs(), BW_SHIFTL); break;
+    case TO_SHREQ:   emitCompoundArith(_OP_BITW, COMPARITH_BW_SHIFTR, expr->lhs(), expr->rhs(), BW_SHIFTR); break;
+    case TO_USHREQ:  emitCompoundArith(_OP_BITW, COMPARITH_BW_USHIFTR, expr->lhs(), expr->rhs(), BW_USHIFTR); break;
     case TO_ADD:
       if ( is_literal_in_int_range(expr->lhs()) )
       {

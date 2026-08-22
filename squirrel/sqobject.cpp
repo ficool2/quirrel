@@ -350,6 +350,17 @@ SQInteger SQFunctionProto::GetLine(const SQInstruction *curr, int *hint, bool *i
 }
 
 
+#ifndef NO_GARBAGE_COLLECTOR
+void SQClosure::Finalize()
+{
+    SQFunctionProto *f = _function;
+    _NULL_SQOBJECT_VECTOR(_outervalues,f->_noutervalues);
+    _NULL_SQOBJECT_VECTOR(_defaultparams,f->_ndefaultparams);
+    __ObjRelease(_env);
+    __ObjRelease(_base);
+}
+#endif
+
 SQClosure::~SQClosure()
 {
     __ObjRelease(_env);

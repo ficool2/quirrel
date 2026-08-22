@@ -50,11 +50,7 @@ public:
 
 #ifndef NO_GARBAGE_COLLECTOR
     void Mark(SQCollectable **chain);
-    void Finalize(){
-        SQFunctionProto *f = _function;
-        _NULL_SQOBJECT_VECTOR(_outervalues,f->_noutervalues);
-        _NULL_SQOBJECT_VECTOR(_defaultparams,f->_ndefaultparams);
-    }
+    void Finalize();
     SQObjectType GetType() {return OT_CLOSURE;}
 #endif
     SQWeakRef *_env;

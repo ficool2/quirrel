@@ -258,9 +258,31 @@ SQSharedState::~SQSharedState()
         }
     }
     assert(_gc_chain==NULL); //just to proove a theory
+
+    // Anything still here after the finalize sweep is holding a reference 
+    // that nothing in the VM owns any more...
     while(_gc_chain){
-        _gc_chain->_uiRef++;
-        _gc_chain->Release();
+        SQCollectable *t = _gc_chain;
+        if(t->_uiRef == 0) {
+            t->Release(); //frees and unlinks itself
+            assert(_gc_chain != t);
+            continue;
+        }
+
+        SQRELEASEHOOK hook = NULL;
+        if(t->GetType() == OT_INSTANCE)
+            hook = ((SQInstance *)t)->_hook;
+
+        if(_errorfunc) {
+            _errorfunc(NULL,"leaked %s %p (refs=%u, hook=%p) at VM shutdown\n",
+                IdType2Name(t->GetType()), (void *)t, (unsigned)t->_uiRef, (void *)hook);
+        }
+
+        _gc_chain = t->_gc_next;
+        if(_gc_chain)
+            _gc_chain->_gc_prev = NULL;
+        t->_gc_next = NULL;
+        t->_gc_prev = NULL;
     }
 #endif
 

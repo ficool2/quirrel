@@ -979,6 +979,11 @@ bool SQVM::Execute(const SQObjectPtr &closure, SQInteger nargs, SQInteger stackb
 
     if ((_nnativecalls + 1) > MAX_NATIVE_CALLS) { Raise_Error("Native stack overflow"); return false; }
     _nnativecalls++;
+#if SQ_WATCHDOG_ENABLED
+	// restart watchdog on outer code first entry
+    if (_watchdog_hook && _nnativecalls == 1 && ci == NULL)
+        _watchdog_hook(this, true);
+#endif
     AutoDec ad(&_nnativecalls);
     SQInteger traps = 0;
     SQInteger prevci_idx = _callsstacksize;
@@ -1481,7 +1486,10 @@ exception_restore:
             }
             continue;
             case _OP_DMOVE: STK(arg0) = STK(arg1); STK(arg2) = STK(arg3); continue;
-            case _OP_JMP: _ip += sarg1; continue;
+            case _OP_JMP:
+                if (sarg1 < 0) SQ_WATCHDOG_CHECK();
+                _ip += sarg1;
+                continue;
             case _OP_JCMP: {
                 int r;
                 const uint8_t uArg3 = arg3;

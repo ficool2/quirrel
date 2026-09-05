@@ -36,7 +36,7 @@
 #endif
 
 #ifndef SQ_WATCHDOG_ENABLED
-#define SQ_WATCHDOG_ENABLED 0
+#define SQ_WATCHDOG_ENABLED 1
 #endif
 
 #endif //_SQPCHEADER_H_

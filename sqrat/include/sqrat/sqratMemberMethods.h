@@ -56,7 +56,7 @@ struct SqMemberThunkGen<C, MemberFunc, R(A...)>
     sq_getstackobj(vm, 1, &selfObj);
     C *ptr = ClassType<C>::GetInstanceFromObj(selfObj);
     if (!ptr)
-      return sq_throwerror(vm, FormatTypeError(vm, 1, ClassType<C>::ClassName().c_str()).c_str());
+      return ClassType<C>::ThrowSelfError(vm);
     auto vars = vargs::make_vars<A...>(vm, 2);
     R ret = vargs::apply_member(ptr, *methodPtr, vars);
     PushVar(vm, ret);
@@ -81,7 +81,7 @@ struct SqMemberThunkGen<C, MemberFunc, void(A...)>
     sq_getstackobj(vm, 1, &selfObj);
     C *ptr = ClassType<C>::GetInstanceFromObj(selfObj);
     if (!ptr)
-      return sq_throwerror(vm, FormatTypeError(vm, 1, ClassType<C>::ClassName().c_str()).c_str());
+      return ClassType<C>::ThrowSelfError(vm);
     auto vars = vargs::make_vars<A...>(vm, 2);
     vargs::apply_member(ptr, *methodPtr, vars);
     return 0;
@@ -109,7 +109,7 @@ inline SQInteger sqDefaultGet(HSQUIRRELVM vm) {
     sq_getstackobj(vm, 1, &selfObj);
     C* ptr = ClassType<C>::GetInstanceFromObj(selfObj);
     if (!ptr)
-      return sq_throwerror(vm, FormatTypeError(vm, 1, ClassType<C>::ClassName().c_str()).c_str());
+      return ClassType<C>::ThrowSelfError(vm);
 
     typedef V C::*M;
     M* memberPtr = NULL;
@@ -160,7 +160,7 @@ inline SQInteger sqDefaultSet(HSQUIRRELVM vm) {
     sq_getstackobj(vm, 1, &selfObj);
     C* ptr = ClassType<C>::GetInstanceFromObj(selfObj);
     if (!ptr)
-      return sq_throwerror(vm, FormatTypeError(vm, 1, ClassType<C>::ClassName().c_str()).c_str());
+      return ClassType<C>::ThrowSelfError(vm);
 
     typedef V C::*M;
     M* memberPtr = NULL;

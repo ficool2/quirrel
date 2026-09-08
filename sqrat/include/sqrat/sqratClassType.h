@@ -349,6 +349,19 @@ public:
 
     // Stackless instance extraction from HSQOBJECT.
     // Returns nullptr on null/failure (no asserts -- callers report errors).
+    static SQInteger ThrowSelfError(HSQUIRRELVM vm, SQInteger idx = 1) {
+        if (sq_gettype(vm, idx) == OT_NULL)
+            return sq_throwerror(vm, (string("attempt to call a ") + ClassName() +
+                " method on a null value").c_str());
+
+        SQUserPointer ptr = nullptr;
+        if (SQ_SUCCEEDED(sq_getinstanceup(vm, idx, &ptr, TypeTag<C>::get())) && !ptr)
+            return sq_throwerror(vm, (string("this ") + ClassName() +
+                " is no longer valid (the native object it referred to is gone)").c_str());
+
+        return sq_throwerror(vm, FormatTypeError(vm, idx, ClassName().c_str()).c_str());
+    }
+
     static C* GetInstanceFromObj(const HSQOBJECT &o) {
         if (o._type == OT_NULL)
             return nullptr;

@@ -2244,7 +2244,7 @@ SQInteger SQVM::GetImpl(const SQObjectPtr &self, const SQObjectPtr &key, SQObjec
           propagate_immutable(self, dest);
           return SLOT_STATUS_OK;
         }
-        if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key);
+        if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key, self);
         return SLOT_STATUS_NO_MATCH;
     }
     switch(sq_type(self)){
@@ -2261,7 +2261,7 @@ SQInteger SQVM::GetImpl(const SQObjectPtr &self, const SQObjectPtr &key, SQObjec
                 return SLOT_STATUS_OK;
             }
             if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0)
-                Raise_IdxError(key);
+                Raise_IdxError(key, self);
             return SLOT_STATUS_NO_MATCH;
         }
         break;
@@ -2286,7 +2286,7 @@ SQInteger SQVM::GetImpl(const SQObjectPtr &self, const SQObjectPtr &key, SQObjec
                 dest = SQInteger(_stringval(self)[n]);
                 return SLOT_STATUS_OK;
             }
-            if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key);
+            if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key, self);
             return SLOT_STATUS_NO_MATCH;
         }
         break;
@@ -2308,7 +2308,7 @@ SQInteger SQVM::GetImpl(const SQObjectPtr &self, const SQObjectPtr &key, SQObjec
             return SLOT_STATUS_OK;
         }
     }
-    if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key);
+    if ((getflags & GET_FLAG_DO_NOT_RAISE_ERROR) == 0) Raise_IdxError(key, self);
     return SLOT_STATUS_NO_MATCH;
 }
 

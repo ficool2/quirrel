@@ -490,6 +490,26 @@ void SQVM::Raise_IdxError(const SQObjectPtr &o)
     Raise_Error("the index %s does not exist", _stringval(oval));
 }
 
+void SQVM::Raise_IdxError(const SQObjectPtr &o, const SQObjectPtr &self)
+{
+    switch (sq_type(self)) {
+        case OT_TABLE:
+        case OT_ARRAY:
+        case OT_INSTANCE:
+        case OT_CLASS:
+        case OT_USERDATA:
+        case OT_STRING:
+            break;
+        default: {
+            SQObjectPtr oval(PrintObjVal(o));
+            Raise_Error("attempt to index a %s value with %s",
+                GetTypeName(self), _stringval(oval));
+            return;
+        }
+    }
+    Raise_IdxError(o);
+}
+
 void SQVM::Raise_MetamethodError(const char *mmname)
 {
     if (sq_type(_lasterror) == OT_STRING) {

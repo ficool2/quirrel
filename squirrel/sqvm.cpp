@@ -2105,7 +2105,26 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
     }
 
     _nnativecalls++;
-    SQInteger ret = (nclosure->_function)(this);
+    SQInteger ret;
+    if (_debughook && _debughook_native) {
+        const SQChar *nname = sq_type(nclosure->_name) == OT_STRING ? _stringval(nclosure->_name) : "unknown";
+
+        _debughook = false;
+        _debughook_native(this, 'n', NULL, 0, nname);
+        _debughook = true;
+
+        ret = (nclosure->_function)(this);
+
+        // the native may have pulled the hook out from under us
+        if (_debughook_native) {
+            _debughook = false;
+            _debughook_native(this, 'N', NULL, 0, nname);
+            _debughook = true;
+        }
+    }
+    else {
+        ret = (nclosure->_function)(this);
+    }
     _nnativecalls--;
 
     suspend = false;

@@ -650,9 +650,18 @@ namespace vargs
       sq_getstring(vm, -1, &argTypeName);
     }
 
-    char errMsg[128];
-    snprintf(errMsg, sizeof(errMsg), "Wrong argument type, expected '%s', got '%s'",
-             expected, argTypeName);
+    SQUserPointer instanceUp = nullptr;
+    bool isDeadInstance = sq_gettype(vm, idx) == OT_INSTANCE &&
+                          SQ_SUCCEEDED(sq_getinstanceup(vm, idx, &instanceUp, nullptr)) &&
+                          instanceUp == nullptr;
+
+    char errMsg[160];
+    if (isDeadInstance)
+        snprintf(errMsg, sizeof(errMsg), "Argument %d is a '%s' that is no longer valid",
+                 (int)idx, argTypeName);
+    else
+        snprintf(errMsg, sizeof(errMsg), "Wrong argument type, expected '%s', got '%s'",
+                 expected, argTypeName);
     sq_settop(vm, prevTop);
     (void)sq_throwerror(vm, errMsg);
 

@@ -2107,7 +2107,7 @@ bool SQVM::CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger newb
     _nnativecalls++;
     SQInteger ret;
     if (_debughook && _debughook_native) {
-        const SQChar *nname = sq_type(nclosure->_name) == OT_STRING ? _stringval(nclosure->_name) : "unknown";
+        const char *nname = sq_type(nclosure->_name) == OT_STRING ? _stringval(nclosure->_name) : "unknown";
 
         _debughook = false;
         _debughook_native(this, 'n', NULL, 0, nname);

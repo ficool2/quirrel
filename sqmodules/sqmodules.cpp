@@ -389,9 +389,9 @@ bool SqModules::importModules(const char *resolved_fn, Sqrat::Table &bindings_de
       break;
     }
 
-    if (import.numSlots == 0) // import module as slot
+    if (import.numSlots == 0 && import.alias) // import module as slot
     {
-      Sqrat::Object key(import.alias ? import.alias : import.name, sqvm);
+      Sqrat::Object key(import.alias, sqvm);
       if (!mergeBindings(bindings_dest, key, exports, mergeErrorMsg))
       {
         success = false;
@@ -409,6 +409,18 @@ bool SqModules::importModules(const char *resolved_fn, Sqrat::Table &bindings_de
       }
 
       Sqrat::Table exportsTbl(exports);
+
+      if (import.numSlots == 0) // a bare import brings in every exported field
+      {
+        if (!mergeBindings(bindings_dest, exportsTbl, mergeErrorMsg))
+        {
+          out_err_msg = format_string("%s:%d:%d: %s", resolved_fn, import.line, import.nameColumn, mergeErrorMsg.c_str());
+          success = false;
+          break;
+        }
+
+        continue;
+      }
       for (int iSlot = 0; iSlot < import.numSlots; ++iSlot)
       {
         const SQModuleImportSlot &slot = import.slots[iSlot];

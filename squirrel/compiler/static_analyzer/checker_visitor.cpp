@@ -5559,9 +5559,10 @@ void CheckerVisitor::visitImportStatement(ImportStmt *import) {
   };
 
   if (import->slots.empty()) {
-    declareSlot(import->lineStart(),
-                import->moduleAlias ? import->aliasCol : import->nameCol,
-                import->moduleAlias ? import->moduleAlias : import->moduleName);
+    if (import->moduleAlias)
+      declareSlot(import->lineStart(), import->aliasCol, import->moduleAlias);
+    else
+      wildcardImportedModules.insert(std::string(import->moduleName));
   }
   else {
     bool hasWildcard = false;

@@ -203,6 +203,7 @@ private:
   vector<Sqrat::Object> onModuleUnload;
   vector<string> onModuleUnloadOwners; //< module that registered each handler
   vector<SQRAT_STD::pair<string, string>> dependencies; //< (importer, imported)
+  bool scriptRequirePending = false; //< next requireModule() comes from an import or require()
   HSQUIRRELVM sqvm = nullptr;
 
   ISqModulesFileAccess *fileAccess = nullptr;

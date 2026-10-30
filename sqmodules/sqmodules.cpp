@@ -380,7 +380,9 @@ bool SqModules::importModules(const char *resolved_fn, Sqrat::Table &bindings_de
     }
 
     auto nativeIt = nativeModules.find(import.name);
-    if (nativeIt != nativeModules.end())
+    bool isNative = nativeIt != nativeModules.end();
+    scriptRequirePending = !isNative;
+    if (isNative)
       exports = nativeIt->second;
     else if (!requireModule(moduleFnStr.c_str(), true, __fn__, exports, requireErrorMsg))
     {
@@ -476,6 +478,9 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
   out_err_msg.clear();
   exports.Release();
 
+  bool fromScript = scriptRequirePending;
+  scriptRequirePending = false;
+
   string resolvedFn;
   fileAccess->resolveFileName(requested_fn, runningScripts.empty() ? nullptr : runningScripts.back().c_str(), resolvedFn);
 
@@ -488,7 +493,7 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
     return false;
   }
 
-  if (!runningScripts.empty())
+  if (fromScript && !runningScripts.empty())
     addDependency(runningScripts.back(), resolvedFn);
 
   if (Module *found = findModule(resolvedFn.c_str()))
@@ -668,10 +673,14 @@ bool SqModules::reloadModules(const vector<string> &resolved_fns, string &full_e
   modules.swap(kept);
 
   // stale modules will record their imports again as they run again
+  vector<SQRAT_STD::pair<string, string>> staleDependencies;
   for (size_t i = 0; i < dependencies.size();)
   {
     if (contains(stale, dependencies[i].first))
+    {
+      staleDependencies.push_back(dependencies[i]);
       dependencies.erase(dependencies.begin() + i);
+    }
     else
       ++i;
   }
@@ -689,6 +698,17 @@ bool SqModules::reloadModules(const vector<string> &resolved_fns, string &full_e
       res = false;
       append_format(full_err_msg, "%s: %s\n", prev.fn.c_str(), errMsg.c_str());
     }
+  }
+
+  for (const Module &prev : prevModules)
+  {
+    if (findModule(prev.fn.c_str()))
+      continue;
+
+    modules.push_back(prev);
+    for (const auto &dep : staleDependencies)
+      if (dep.first == prev.fn)
+        addDependency(dep.first, dep.second);
   }
 
   prevModules.clear();
@@ -811,6 +831,7 @@ SQInteger SqModules::sqRequire(HSQUIRRELVM vm) // arguments: fileName, mustExist
 
   Sqrat::Object exports(vm);
   string errMsg;
+  self->scriptRequirePending = true;
   if (!self->requireModule(fileName, must_exist, __fn__, exports, errMsg))
     return sq_throwerror(vm, errMsg.c_str());
 

@@ -98,6 +98,13 @@ public:
   bool reloadModule(const char *fn, bool must_exist, const char *__name__, Sqrat::Object &exports, string &out_err_msg);
 
   bool reloadAll(string &err_msg);
+  // Reloads the given modules and every loaded module importing them
+  bool reloadModules(const vector<string> &resolved_fns, string &err_msg);
+
+  void collectStaleModules(const vector<string> &resolved_fns, vector<string> &stale);
+
+  // Resolved file name of the module
+  const char *getRunningScript() const { return runningScripts.empty() ? nullptr : runningScripts.back().c_str(); }
 
   void resetStaticMemos();
 
@@ -162,6 +169,8 @@ private:
 
   static SQInteger register_on_module_unload(HSQUIRRELVM vm);
   void callAndClearUnloadHandlers(bool is_closing);
+  void callUnloadHandlers(const vector<string> &owner_fns);
+  void addDependency(const string &importer_fn, const string &imported_fn);
 
 public:
   static const char *__main__, *__fn__, *__analysis__;
@@ -192,6 +201,8 @@ private:
 
   vector<string> runningScripts;
   vector<Sqrat::Object> onModuleUnload;
+  vector<string> onModuleUnloadOwners; //< module that registered each handler
+  vector<SQRAT_STD::pair<string, string>> dependencies; //< (importer, imported)
   HSQUIRRELVM sqvm = nullptr;
 
   ISqModulesFileAccess *fileAccess = nullptr;

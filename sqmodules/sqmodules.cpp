@@ -488,6 +488,9 @@ bool SqModules::requireModule(const char *requested_fn, bool must_exist, const c
     return false;
   }
 
+  if (!runningScripts.empty())
+    addDependency(runningScripts.back(), resolvedFn);
+
   if (Module *found = findModule(resolvedFn.c_str()))
   {
     exports = found->exports;
@@ -597,6 +600,7 @@ bool SqModules::reloadModule(const char *fn, bool must_exist, const char *__name
 
   modules.swap(prevModules);
   modules.clear(); // just in case
+  dependencies.clear();
 
   callAndClearUnloadHandlers(false);
 
@@ -616,6 +620,7 @@ bool SqModules::reloadAll(string &full_err_msg)
 
   modules.swap(prevModules);
   modules.clear(); // just in case
+  dependencies.clear();
 
   callAndClearUnloadHandlers(false);
 
@@ -634,6 +639,90 @@ bool SqModules::reloadAll(string &full_err_msg)
   prevModules.clear();
 
   return res;
+}
+
+
+bool SqModules::reloadModules(const vector<string> &resolved_fns, string &full_err_msg)
+{
+  SQRAT_ASSERT(prevModules.empty());
+  full_err_msg.clear();
+
+  vector<string> stale;
+  collectStaleModules(resolved_fns, stale);
+  if (stale.empty())
+    return true;
+
+  auto contains = [](const vector<string> &list, const string &fn) {
+    return SQRAT_STD::find(list.begin(), list.end(), fn) != list.end();
+  };
+
+  // keep load order so dependencies run before importers
+  vector<Module> kept;
+  for (Module &m : modules)
+  {
+    if (contains(stale, m.fn))
+      prevModules.push_back(m);
+    else
+      kept.push_back(m);
+  }
+  modules.swap(kept);
+
+  // stale modules will record their imports again as they run again
+  for (size_t i = 0; i < dependencies.size();)
+  {
+    if (contains(stale, dependencies[i].first))
+      dependencies.erase(dependencies.begin() + i);
+    else
+      ++i;
+  }
+
+  resetStaticMemos();
+  callUnloadHandlers(stale);
+
+  bool res = true;
+  Sqrat::Object exportsTmp;
+  string errMsg;
+  for (const Module &prev : prevModules)
+  {
+    if (!requireModule(prev.fn.c_str(), true, prev.__name__.c_str(), exportsTmp, errMsg))
+    {
+      res = false;
+      append_format(full_err_msg, "%s: %s\n", prev.fn.c_str(), errMsg.c_str());
+    }
+  }
+
+  prevModules.clear();
+
+  return res;
+}
+
+
+void SqModules::collectStaleModules(const vector<string> &resolved_fns, vector<string> &stale)
+{
+  auto contains = [](const vector<string> &list, const string &fn) {
+    return SQRAT_STD::find(list.begin(), list.end(), fn) != list.end();
+  };
+
+  stale.clear();
+
+  for (const string &fn : resolved_fns)
+    if (findModule(fn.c_str()) && !contains(stale, fn))
+      stale.push_back(fn);
+
+  for (size_t i = 0; i < stale.size(); ++i)
+    for (const auto &dep : dependencies)
+      if (dep.second == stale[i] && findModule(dep.first.c_str()) && !contains(stale, dep.first))
+        stale.push_back(dep.first);
+}
+
+
+void SqModules::addDependency(const string &importer_fn, const string &imported_fn)
+{
+  for (const auto &dep : dependencies)
+    if (dep.first == importer_fn && dep.second == imported_fn)
+      return;
+
+  dependencies.push_back({importer_fn, imported_fn});
 }
 
 
@@ -803,6 +892,37 @@ void SqModules::callAndClearUnloadHandlers(bool is_closing)
       SQRAT_ASSERT(0);
   }
   onModuleUnload.clear();
+  onModuleUnloadOwners.clear();
+}
+
+
+void SqModules::callUnloadHandlers(const vector<string> &owner_fns)
+{
+  for (size_t i = 0; i < onModuleUnload.size();)
+  {
+    if (SQRAT_STD::find(owner_fns.begin(), owner_fns.end(), onModuleUnloadOwners[i]) == owner_fns.end())
+    {
+      ++i;
+      continue;
+    }
+
+    Sqrat::Object f = onModuleUnload[i];
+    onModuleUnload.erase(onModuleUnload.begin() + i);
+    onModuleUnloadOwners.erase(onModuleUnloadOwners.begin() + i);
+
+    SQInteger nparams = 0, nfreevars = 0;
+    sq_pushobject(sqvm, f.GetObject());
+    SQRAT_VERIFY(SQ_SUCCEEDED(sq_getclosureinfo(sqvm, -1, &nparams, &nfreevars)));
+    sq_pop(sqvm, 1);
+
+    Sqrat::Function func(sqvm, Sqrat::Object(), f.GetObject());
+    if (nparams == 1)
+      func();
+    else if (nparams == 2)
+      func(false);
+    else
+      SQRAT_ASSERT(0);
+  }
 }
 
 
@@ -822,7 +942,10 @@ SQInteger SqModules::register_on_module_unload(HSQUIRRELVM vm)
   auto it = SQRAT_STD::find_if(self->onModuleUnload.begin(), self->onModuleUnload.end(),
     [hFunc](const Sqrat::Object &f) { return f.GetType() == sq_type(hFunc) && f.GetObject()._unVal.raw == hFunc._unVal.raw; });
   if (it == self->onModuleUnload.end())
+  {
     self->onModuleUnload.push_back(Sqrat::Object(hFunc, vm));
+    self->onModuleUnloadOwners.push_back(self->runningScripts.empty() ? string() : self->runningScripts.back());
+  }
 
   return 0;
 }
